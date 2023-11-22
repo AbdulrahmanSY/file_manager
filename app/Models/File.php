@@ -13,4 +13,8 @@ class File extends Model
         'status',
         'repo_id',
     ];
+    function repo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Repo::class,'repo_id','id');
+    }
 }

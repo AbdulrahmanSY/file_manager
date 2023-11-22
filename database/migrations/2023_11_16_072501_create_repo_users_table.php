@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users');
             $table->foreignId('repo_id')->references('id')->on('repos');
-
+            $table->boolean('is_admin')->default(false);
             $table->timestamps();
         });
     }

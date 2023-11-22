@@ -33,11 +33,13 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verified_at',
+        'code'
     ];
 
     function repo(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany('repo_users');
+        return $this->belongsToMany(Repo::class,'repo_users','user_id','repo_id')->withPivot('is_admin');
     }
 
     /**

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
-    function register(RegisterRequest $request): \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Foundation\Application|\Illuminate\Http\Response
+    function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
         try {
             $existing = User::where('email', '=', $request->email);
@@ -29,9 +29,9 @@ class AuthController extends Controller
                 $user = User::where('email', '=', $request->email)->first();
                 Mail::to($request->email)->send(new verifyMail($user));
             }
-            return response(['message:' => 'send code'], 200);
+            return $this->success(message: 'send code');
         } catch (\Exception $e) {
-            return response(['message:' => $e->getMessage()]);
+            return $this->error(['message:' => $e->getMessage()]);
         }
     }
 
@@ -44,25 +44,29 @@ class AuthController extends Controller
                 'verify' => true
             ]);
             $token = $user->createToken('apiToken')->plainTextToken;
-            return response()->json(['token' => $token]);
+            $res = [
+                'user' => $user,
+                'token' => $token
+            ];
+
+            return $this->success(data: $res);
         }
-        return response()->json(['message' => 'Otp wrong ']);
+        return $this->success(message: 'Otp wrong ');
     }
 
-    function login(LoginRequest $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+    function login(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = User::where('email', $request['email'])->first();
         if (!$user || !Hash::check($request['password'], $user->password) || !$user->verify) {
-            return response([
-                'msg' => 'incorrect username or password or not verification'
-            ], 401);
+            return $this->error(message: 'incorrect username or password or not verification'
+            );
         }
         $token = $user->createToken('apiToken')->plainTextToken;
         $res = [
             'user' => $user,
             'token' => $token
         ];
-        return response($res, 201);
+        return $this->success($res);
     }
 
     function logout(Request $request): array

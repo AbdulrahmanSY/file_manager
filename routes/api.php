@@ -24,8 +24,10 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('logout',[AuthController::class,'logout']);
 
     Route::prefix('repo')->group(function () {
-        Route::post('create-repository',[RepoController::class,'createRepository']);
-
+        Route::post('create-repository',[RepoController::class,'create']);
+        Route::delete('delete-repository/{id}',[RepoController::class,'delete']);
+        Route::put('update-repository',[RepoController::class,'update']);
+        Route::get('get-repository',[RepoController::class,'get']);
     });
 
 });

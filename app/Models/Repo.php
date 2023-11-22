@@ -11,6 +11,13 @@ class Repo extends Model
     protected $fillable = [
         'name',
     ];
-
+    function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class,'repo_users','user_id','repo_id');
+    }
+    function files(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(File::class,'repo_id','id');
+    }
 
 }
