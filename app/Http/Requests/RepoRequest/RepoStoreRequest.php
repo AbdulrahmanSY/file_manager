@@ -2,10 +2,15 @@
 
 namespace App\Http\Requests\RepoRequest;
 
+use App\Traits\ApiResponderTrait;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class RepoStoreRequest extends FormRequest
 {
+    use ApiResponderTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -24,5 +29,10 @@ class RepoStoreRequest extends FormRequest
         return [
             'name'=>['required']
         ];
+    }
+    public function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors()->all();
+        throw new HttpResponseException($this->badRequestResponse('Bad input', $errors));
     }
 }
