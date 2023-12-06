@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthRequest\LoginRequest;
 use App\Http\Requests\AuthRequest\RegisterRequest;
 use App\Http\Requests\AuthRequest\VerifyRequest;
+use App\Jobs\SendMailJob;
 use App\Mail\verifyMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,10 +25,10 @@ class AuthController extends Controller
                     'email' => $request['email'],
                     'password' => bcrypt($request['password'])
                 ]);
-                Mail::to($request->email)->send(new verifyMail($user));
+                SendMailJob::dispatch($user);
             } else {
                 $user = User::where('email', '=', $request->email)->first();
-                Mail::to($request->email)->send(new verifyMail($user));
+                SendMailJob::dispatch($user);
             }
             return $this->success(message: 'send code');
         } catch (\Exception $e) {
@@ -35,7 +36,7 @@ class AuthController extends Controller
         }
     }
 
-    function verify(VerifyRequest $request): \Illuminate\Http\JsonResponse
+    public function verify(VerifyRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = User::where('email', $request->email)->first();
         if ($user->code == $request->code) {
@@ -54,7 +55,7 @@ class AuthController extends Controller
         return $this->success(message: 'Otp wrong ');
     }
 
-    function login(LoginRequest $request): \Illuminate\Http\JsonResponse
+    public function login(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = User::where('email', $request['email'])->first();
         if (!$user || !Hash::check($request['password'], $user->password) || !$user->verify) {
@@ -69,17 +70,17 @@ class AuthController extends Controller
         return $this->success($res);
     }
 
-    function logout(Request $request): array
+    public function logout(Request $request): array
     {
         if (Auth::user() !== null) {
             Auth::user()->tokens()->delete();
             return [
                 'message' => 'User logged out',
             ];
-        } else {
-            return [
-                'message' => 'User not logged in',
-            ];
         }
+
+        return [
+            'message' => 'User not logged in',
+        ];
     }
 }

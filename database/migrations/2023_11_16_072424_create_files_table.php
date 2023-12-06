@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('status');
+            $table->string('path');
             $table->foreignId('repo_id')->references('id')->on('repos');
             $table->timestamps();
         });
