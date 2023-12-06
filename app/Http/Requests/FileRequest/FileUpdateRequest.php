@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\FileRequest;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class FileUpdateRequest extends FormRequest
 {
@@ -24,5 +26,10 @@ class FileUpdateRequest extends FormRequest
         return [
             //
         ];
+    }
+    public function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors()->all();
+        throw new HttpResponseException($this->badRequestResponse('Bad input', $errors));
     }
 }

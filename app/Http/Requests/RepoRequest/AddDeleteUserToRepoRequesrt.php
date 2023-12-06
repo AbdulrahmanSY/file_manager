@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\RepoRequest;
 
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class AddDeleteUserToRepoRequesrt extends FormRequest
@@ -27,5 +29,10 @@ class AddDeleteUserToRepoRequesrt extends FormRequest
             'user_id'=>['required',Rule::exists('users','id')],
             'repo_id'=>['required',Rule::exists('repos','id')],
         ];
+    }
+    public function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors()->all();
+        throw new HttpResponseException($this->badRequestResponse('Bad input', $errors));
     }
 }

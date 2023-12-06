@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AddDeleteUserToRepoRequesrt;
+use App\Http\Requests\RepoRequest\AddDeleteUserToRepoRequesrt;
 use App\Http\Requests\RepoRequest\RepoStoreRequest;
 use App\Http\Requests\RepoRequest\RepoUpdateRequest;
 use App\Http\Resources\RepoResource;
@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 class RepoController extends Controller
 {
-    function create(RepoStoreRequest $request): \Illuminate\Http\JsonResponse
+    public function create(RepoStoreRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
         $repository = new Repo();
@@ -22,7 +22,7 @@ class RepoController extends Controller
         $user->repo()->attach($repository, ['is_admin' => true]);
         return $this->success(new UserResource($user->load('repo')));
     }
-    function delete(Request $request): \Illuminate\Http\JsonResponse
+    public function delete(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
@@ -43,7 +43,7 @@ class RepoController extends Controller
         }
     }
 
-    function get(Request $request): \Illuminate\Http\JsonResponse
+    public function get(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
@@ -84,5 +84,4 @@ class RepoController extends Controller
             return $this->error($e->getMessage());
         }
     }
-
 }

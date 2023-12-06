@@ -11,9 +11,10 @@ class File extends Model
     protected $fillable = [
         'name',
         'status',
+        'path',
         'repo_id',
     ];
-    function repo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function repo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Repo::class,'repo_id','id');
     }

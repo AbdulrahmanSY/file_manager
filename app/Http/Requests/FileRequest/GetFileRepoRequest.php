@@ -1,17 +1,15 @@
 <?php
 
-namespace App\Http\Requests\AuthRequest;
+namespace App\Http\Requests\FileRequest;
 
-use App\Traits\ApiResponderTrait;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class VerifyRequest extends FormRequest
+class GetFileRepoRequest extends FormRequest
 {
-
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,13 +21,12 @@ class VerifyRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'email' => ['required','email',Rule::exists('users')],
-            'code'=>['required']
+            'repo_id'=>['required',Rule::exists('repos','id')]
         ];
     }
     public function failedValidation(Validator $validator)

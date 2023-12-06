@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->group( function () {
         Route::post('create-file',[FileController::class,'create']);
         Route::delete('delete-file/{id}',[FileController::class,'delete']);
         Route::put('update-file',[FileController::class,'update']);
-        Route::get('get-file',[FileController::class,'get']);
+        Route::Post('get-file',[FileController::class,'get']);
     });
 
 });

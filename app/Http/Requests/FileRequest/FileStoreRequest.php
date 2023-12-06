@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\FileRequest;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class FileStoreRequest extends FormRequest
@@ -23,8 +25,13 @@ class FileStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:jpeg,png,pdf', 'max:2048'],
-            'repo_id'=>['required']
+            'file' => ['required', 'file', 'mimes:doc,docx,pdf,txt','max:2048'],
+            'repo_id'=>['required',Rule::exists('repos','id')]
         ];
+    }
+    public function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors()->all();
+        throw new HttpResponseException($this->badRequestResponse('Bad input', $errors));
     }
 }
