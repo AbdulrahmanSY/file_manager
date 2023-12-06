@@ -23,6 +23,7 @@ Route::post('login',[AuthController::class,'login']);
 
 Route::middleware('auth:sanctum')->group( function () {
     Route::get('logout',[AuthController::class,'logout']);
+    Route::get('get-user',[AuthController::class,'get']);
 
     Route::prefix('repo')->group(function () {
         Route::post('create-repository',[RepoController::class,'create']);

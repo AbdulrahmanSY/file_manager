@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthRequest\LoginRequest;
 use App\Http\Requests\AuthRequest\RegisterRequest;
 use App\Http\Requests\AuthRequest\VerifyRequest;
+use App\Http\Resources\UserResource;
 use App\Jobs\SendMailJob;
 use App\Mail\verifyMail;
 use App\Models\User;
@@ -83,4 +84,12 @@ class AuthController extends Controller
             'message' => 'User not logged in',
         ];
     }
+
+    public function get(Request $request)
+    {
+        $user = Auth::user();
+        $users = User::where('id', '!=', $user->id)->get();
+        return $this->success(UserResource::collection($users));
+    }
+
 }
