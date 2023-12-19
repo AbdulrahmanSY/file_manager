@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\FileRequest;
 
+use App\Rules\UserAttachedToRepo;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class GetFileRepoRequest extends FormRequest
@@ -26,7 +28,7 @@ class GetFileRepoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'repo_id'=>['required',Rule::exists('repos','id')]
+            'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')]
         ];
     }
     public function failedValidation(Validator $validator)

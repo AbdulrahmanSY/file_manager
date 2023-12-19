@@ -8,10 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Register extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'name',
-        'user_id',
-        'repo_id',
-        'operation',
-    ];
+    protected $fillable = ['user_id', 'file_id', 'operation'];
 }
