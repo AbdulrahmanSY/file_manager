@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FileRequest\CheckInOutRequest;
-use App\Http\Requests\FileRequest\DeleteFileRequest;
+use App\Http\Requests\FileRequest\ValidateFileRequest;
 use App\Http\Requests\FileRequest\FileStoreRequest;
 use App\Http\Requests\FileRequest\GetFileRepoRequest;
 use App\Http\Resources\RepoResource;
@@ -67,15 +67,6 @@ class FileController extends Controller
         return $this->success(new RepoResource($repo));
     }
 
-    public function download(CheckInOutRequest $request): \Illuminate\Http\JsonResponse
-    {
-        $user = $request->user();
-        $repo_id = $request['repo_id'];
-        $repo = $user->repo()->when($repo_id, function ($query, $repoId) {
-            return $query->where('repos.id', $repoId);
-        })->with('files')->first();
-        return $this->success(new RepoResource($repo));
-    }
 
     public function update(Request $request, $fileId): \Illuminate\Http\JsonResponse
     {
@@ -112,7 +103,7 @@ class FileController extends Controller
         return response()->json(['error' => 'You do not have permission to update this file']);
     }
 
-    public function delete(DeleteFileRequest $request): \Illuminate\Http\JsonResponse
+    public function delete(ValidateFileRequest $request): \Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
@@ -198,6 +189,27 @@ class FileController extends Controller
         }
         return $this->success(message: 'checkout successfully');
     }
+
+    public function download(ValidateFileRequest $request)
+    {
+        $fileId = $request['file_id'];
+        try {
+
+            $file = File::find($fileId);
+            $fileContents = Storage::get($file->path);
+            $extension = pathinfo($file->path, PATHINFO_EXTENSION);
+            $base64File = base64_encode($fileContents);
+            $fileData = [
+                'extension' => $extension,
+                'content' => $base64File
+            ];
+
+            return response()->json($fileData);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
 }
 
