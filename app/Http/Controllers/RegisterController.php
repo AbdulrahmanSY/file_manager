@@ -30,12 +30,13 @@ class RegisterController extends Controller
             'operation'=>$operation,
         ]);
     }
-    public function getLastOperation(int $file_id)
+    public function getLastOperation(int $file_id,string $operation)
     {
         $lastOperation = Register::where('file_id', $file_id)
+            ->where('operation', $operation)
             ->orderBy('created_at', 'desc')
             ->first();
 
-        return $lastOperation ? $lastOperation->operation : null;
+        return $lastOperation ?: null;
     }
 }
