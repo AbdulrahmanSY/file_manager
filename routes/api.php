@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group( function () {
         Route::post('delete-file',[FileController::class,'delete']);
         Route::post('update-file',[FileController::class,'update']);
         Route::Post('get-file',[FileController::class,'get']);
-        Route::Post('download-file',[FileController::class,'download']);
+        Route::Post('download-file',[FileController::class,'download'])->middleware('check-file-status');
         Route::Post('check-in',[FileController::class,'checkin']);
         Route::Post('check-out',[FileController::class,'checkout']);
     });
