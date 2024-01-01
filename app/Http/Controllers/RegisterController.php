@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FileRequest\ValidateRepoRequest;
 use App\Models\Register;
 use Illuminate\Http\Request;
 
@@ -38,5 +39,8 @@ class RegisterController extends Controller
             ->first();
 
         return $lastOperation ?: null;
+    }
+    public function getReport(ValidateRepoRequest $request)
+    {
     }
 }

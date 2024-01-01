@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\FileRequest\CheckInOutRequest;
 use App\Http\Requests\FileRequest\ValidateFileRequest;
 use App\Http\Requests\FileRequest\FileStoreRequest;
-use App\Http\Requests\FileRequest\GetFileRepoRequest;
+use App\Http\Requests\FileRequest\ValidateRepoRequest;
 use App\Http\Resources\RepoResource;
 use App\Models\File;
+use App\Models\Repo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -57,7 +58,7 @@ class FileController extends Controller
 
     }
 
-    public function get(GetFileRepoRequest $request): \Illuminate\Http\JsonResponse
+    public function get(ValidateRepoRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
         $repo_id = $request['repo_id'];
@@ -159,8 +160,9 @@ class FileController extends Controller
         return $this->success(message: 'checkin successfully');
     }
 
-    public function checkout(CheckInOutRequest $request): \Illuminate\Http\JsonResponse
+    public function checkout(CheckInOutRequest $request)
     {
+
         try {
             DB::beginTransaction();
             $fileIds = $request->input('file_id');
@@ -192,9 +194,9 @@ class FileController extends Controller
 
     public function download(ValidateFileRequest $request)
     {
+
         $fileId = $request['file_id'];
         try {
-
             $file = File::find($fileId);
             $fileContents = Storage::get($file->path);
             $extension = pathinfo($file->path, PATHINFO_EXTENSION);
@@ -203,13 +205,10 @@ class FileController extends Controller
                 'extension' => $extension,
                 'content' => $base64File
             ];
-
             return response()->json($fileData);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
-
 }
 
