@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FileRequest\ValidateRepoRequest;
+use App\Http\Resources\ReportResource;
 use App\Models\Register;
 use Illuminate\Http\Request;
 
@@ -11,9 +12,9 @@ class RegisterController extends Controller
 
     private static $instance = null;
 
-    private function __construct()
-    {
-    }
+//    private function __construct()
+//    {
+//    }
 
     public static function getInstance(): ?RegisterController
     {
@@ -43,5 +44,10 @@ class RegisterController extends Controller
     }
     public function getReport(ValidateRepoRequest $request)
     {
+        $repo = Register::where('repo_id',$request['repo_id'])
+            ->with('file','user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return $this->success(ReportResource::collection($repo));
     }
 }

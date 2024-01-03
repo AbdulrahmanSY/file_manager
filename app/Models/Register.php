@@ -9,4 +9,14 @@ class Register extends Model
 {
     use HasFactory;
     protected $fillable = ['user_id', 'file_id', 'operation','repo_id'];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+    public function repo(){
+        return $this->belongsTo(User::class);
+    }
+    public function file(){
+        return $this->belongsTo(File::class);
+    }
 }

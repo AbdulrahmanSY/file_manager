@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RepoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ Route::middleware('auth:sanctum')->group( function () {
         Route::delete('delete-repository/{id}',[RepoController::class,'delete']);
         Route::post('add-delete-user-to-repo',[RepoController::class,'addDeleteUserToRepo']);
         Route::get('get-repository',[RepoController::class,'get']);
+        Route::post('get-report',[RegisterController::class,'getReport']);
     });
     Route::prefix('file')->group(function () {
         Route::post('create-file',[FileController::class,'create']);
