@@ -22,6 +22,7 @@ class RepoController extends Controller
         $user->repo()->attach($repository, ['is_admin' => true]);
         return $this->success(new UserResource($user->load('repo')));
     }
+
     public function delete(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
@@ -47,18 +48,19 @@ class RepoController extends Controller
     {
         try {
             $user = $request->user();
-            if ($user->repo()->where('user_id', $user->id)->exists()) {
-                return $this->success(data:RepoResource::collection($user->repo()->get()));
+            $repos = $user->repo()->with('users')->get();
+            if ($user->repo()->exists()) {
+                return $this->success(data:RepoResource::collection($repos));
             } else
                 return $this->success(message: 'repo is not existing ');
         } catch (\Exception $e) {
-            return $this->error($e);
+            return $this->error($e->getMessage());
         }
     }
 
     public function addDeleteUserToRepo(AddDeleteUserToRepoRequesrt $request): \Illuminate\Http\JsonResponse
     {
-        try{
+        try {
             $user = $request->user();
             $repoId = $request->repo_id;
             $anotherUserId = $request->user_id;
@@ -80,7 +82,7 @@ class RepoController extends Controller
             } else {
                 return $this->error('You have no permissions');
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
     }

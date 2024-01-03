@@ -13,7 +13,7 @@ class Repo extends Model
     ];
     function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(User::class,'repo_users','user_id','repo_id');
+        return $this->belongsToMany(User::class,'repo_users','repo_id','user_id');
     }
     function files(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
