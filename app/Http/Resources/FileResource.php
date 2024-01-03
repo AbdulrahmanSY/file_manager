@@ -18,7 +18,7 @@ class FileResource extends JsonResource
             'id'=>$this->id,
             'name'=>$this->name,
             'status'=>$this->status,
-            'url'=>url($this->path)
+            'download_count'=>$this->download_count,
         ];
     }
 }

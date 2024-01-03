@@ -9,4 +9,5 @@ class OperationEnum
     public const DELETE = 'delete';
     public const CHECKIN = 'checkin';
     public const CHECKOUT = 'checkout';
+    public const DOWNLOAD = 'download';
 }

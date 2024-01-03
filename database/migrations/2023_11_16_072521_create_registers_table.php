@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('registers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignId('file_id')->references('id')->on('files')->onDelete('cascade');
+            $table->foreignId('repo_id')->references('id')->on('repos')->onDelete('cascade');
+            $table->foreignId('file_id')->references('id')->on('files') ;
             $table->string('operation');
             $table->timestamps();
         });

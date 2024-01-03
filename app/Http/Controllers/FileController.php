@@ -48,7 +48,7 @@ class FileController extends Controller
                     'status' => 'free',
                 ]);
                 $fileId = $file->id; // Get the file ID from the created file entity
-                $this->register->addOperation($fileId, $user->id, OperationEnum::CREATE);
+                $this->register->addOperation($request['repo_id'], $fileId, $user->id, OperationEnum::CREATE);
                 return $this->success(message: 'create file successfully');
             }
             return $this->error('you do not have permeation');
@@ -93,7 +93,7 @@ class FileController extends Controller
                     'path' => $path,
                     'status' => 'free',
                 ]);
-                $this->register->addOperation($fileId, $user->id, OperationEnum::UPDATE);
+                $this->register->addOperation($request['repo_id'], $fileId, $user->id, OperationEnum::UPDATE);
 
                 return response()->json(['message' => 'File updated successfully']);
             } else {
@@ -129,40 +129,38 @@ class FileController extends Controller
 
     }
 
-    public function checkin(CheckInOutRequest $request): CheckInOutRequest|\Illuminate\Http\JsonResponse
+    public function checkin(CheckInOutRequest $request)
     {
-
         try {
-            DB::beginTransaction();
             $user = $request->user();
             $repo = $user->repo->where('id', $request['repo_id'])->first();
             if ($repo) {
                 $fileIds = $request->input('file_id');
-                $files = $repo->files()->whereIn('id', $fileIds)->get();
-
+                $files = $repo->files()->whereIn('id', $fileIds);
+                if(!$files->exists()){
+                    return $this->error('the files not exists ');
+                }
+                $files = $files->get();
+                DB::beginTransaction();
                 foreach ($files as $file) {
-                    if ($file->status === StatusEnum::BLOCK) {
-                        DB::rollBack();
-                        return $this->error('the file : ' . $file->id . ' is blocked ');
+                    if($file->status === StatusEnum::BLOCK){
+                        return $this->error('the files not available ');
                     }
                     $file->status = StatusEnum::BLOCK;
                     $file->save();
-                }
-                foreach ($files as $file) {
-                    $this->register->addOperation($file->id, $user->id, OperationEnum::CHECKIN);
+                    $this->register->addOperation($request['repo_id'], $file->id, $user->id, OperationEnum::CHECKIN);
                 }
             }
             DB::commit();
+            return $this->success(message: 'checkin successfully');
         } catch (Exception $e) {
             DB::rollBack();
             return $this->error($e->getMessage());
         }
-        return $this->success(message: 'checkin successfully');
     }
 
     public function checkout(CheckInOutRequest $request)
     {
-
         try {
             DB::beginTransaction();
             $fileIds = $request->input('file_id');
@@ -170,18 +168,18 @@ class FileController extends Controller
             $repo = $user->repo->where('id', $request['repo_id'])->first();
             foreach ($fileIds as $fileId) {
                 $lastOperation = $this->register->getLastOperation($fileId, OperationEnum::CHECKIN);
-                if ($lastOperation && $lastOperation->operation === OperationEnum::CHECKIN &&
-                    $lastOperation->user_id === $user->id) {
-                    if ($repo) {
-                        $files = $repo->files()->where('id', $fileId)->get();
-                        foreach ($files as $file) {
-                            $file->status = StatusEnum::FREE;
-                            $file->save();
-                        }
+                $file = $repo->files()->find($fileId);
+                if ($repo) {
+                    if ($lastOperation && $lastOperation->operation === OperationEnum::CHECKIN &&
+                        $lastOperation->user_id === $user->id && !($file->status === StatusEnum::FREE)) {
+                        $file->status = StatusEnum::FREE;
+                        $file->save();
+                        $this->register->addOperation($request['repo_id'], $file->id, $user->id, OperationEnum::CHECKOUT);
+
+                    } else {
+                        DB::rollBack();
+                        return $this->error('the file : ' . $fileId . ' you do not checkin ');
                     }
-                } else {
-                    DB::rollBack();
-                    return $this->error('the file : ' . $fileId . ' you do not checkin ');
                 }
             }
             DB::commit();
@@ -205,6 +203,11 @@ class FileController extends Controller
                 'extension' => $extension,
                 'content' => $base64File
             ];
+
+            ++$file->download_count;
+            $file->save();
+            $this->register->addOperation($file->repo->id, $file->id, $request->user()->id, OperationEnum::DOWNLOAD);
+
             return response()->json($fileData);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

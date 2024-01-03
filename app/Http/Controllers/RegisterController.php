@@ -23,12 +23,13 @@ class RegisterController extends Controller
         return self::$instance;
     }
 
-    public function addOperation(int $file_id,int $user_id,string $operation): void
+    public function addOperation(int $repo_id,int $file_id,int $user_id,string $operation): void
     {
         $r=Register::create([
             'user_id'=>$user_id,
             'file_id'=>$file_id,
             'operation'=>$operation,
+            'repo_id'=>$repo_id
         ]);
     }
     public function getLastOperation(int $file_id,string $operation)
