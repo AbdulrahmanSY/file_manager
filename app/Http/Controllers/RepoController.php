@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RepoRequest\AddDeleteUserToRepoRequesrt;
 use App\Http\Requests\RepoRequest\RepoStoreRequest;
-use App\Http\Requests\RepoRequest\RepoUpdateRequest;
 use App\Http\Resources\RepoResource;
 use App\Http\Resources\UserResource;
 use App\Models\Repo;
@@ -71,10 +70,10 @@ class RepoController extends Controller
                 if ($anotherUser) {
                     if (!$anotherUser->repo()->where('repo_id', $repoId)->exists()) {
                         $anotherUser->repo()->attach($repoId);
-                        return $this->success('User added successfully');
+                        return $this->success(message:'User added successfully');
                     } else {
                         $anotherUser->repo()->detach($repoId);
-                        return $this->success('User deleted from repo');
+                        return $this->success(message:'User deleted from repo');
                     }
                 } else {
                     return $this->error('User not found');

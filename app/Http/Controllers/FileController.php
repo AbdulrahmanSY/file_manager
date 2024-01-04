@@ -81,17 +81,14 @@ class FileController extends Controller
             $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
             $newFileName = $fileNameWithoutExtension . '_' . time() . '.' . $extension;
             $path = $uploadedFile->storeAs('uploads', $newFileName);
-
             $existingFileHash = hash_file('md5', Storage::path($file->path));
             $newFileHash = hash_file('md5', $uploadedFile->path());
-
             if ($existingFileHash !== $newFileHash) {
                 Storage::delete($file->path);
 
                 $file->update([
                     'name' => $fileName,
                     'path' => $path,
-                    'status' => 'free',
                 ]);
                 $this->register->addOperation($request['repo_id'], $fileId, $user->id, OperationEnum::UPDATE);
 
@@ -100,7 +97,6 @@ class FileController extends Controller
                 return response()->json(['message' => 'File contents are the same']);
             }
         }
-
         return response()->json(['error' => 'You do not have permission to update this file']);
     }
 
@@ -137,13 +133,13 @@ class FileController extends Controller
             if ($repo) {
                 $fileIds = $request->input('file_id');
                 $files = $repo->files()->whereIn('id', $fileIds);
-                if(!$files->exists()){
+                if (!$files->exists()) {
                     return $this->error('the files not exists ');
                 }
                 $files = $files->get();
                 DB::beginTransaction();
                 foreach ($files as $file) {
-                    if($file->status === StatusEnum::BLOCK){
+                    if ($file->status === StatusEnum::BLOCK) {
                         return $this->error('the files not available ');
                     }
                     $file->status = StatusEnum::BLOCK;
@@ -190,7 +186,7 @@ class FileController extends Controller
         return $this->success(message: 'checkout successfully');
     }
 
-    public function download(ValidateFileRequest $request)
+    public function download(ValidateFileRequest $request): \Illuminate\Http\JsonResponse
     {
 
         $fileId = $request['file_id'];
@@ -200,6 +196,7 @@ class FileController extends Controller
             $extension = pathinfo($file->path, PATHINFO_EXTENSION);
             $base64File = base64_encode($fileContents);
             $fileData = [
+                'name'=>$file->name,
                 'extension' => $extension,
                 'content' => $base64File
             ];
