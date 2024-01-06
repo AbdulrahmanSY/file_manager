@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Aspects\Logger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FileRequest\CheckInOutRequest;
+use App\Http\Requests\FileRequest\FileUpdateRequest;
 use App\Http\Requests\FileRequest\ValidateFileRequest;
 use App\Http\Requests\FileRequest\FileStoreRequest;
 use App\Http\Requests\FileRequest\ValidateRepoRequest;
@@ -71,31 +72,27 @@ class FileController extends Controller
     }
 
 
-    public function update(Request $request, $fileId): \Illuminate\Http\JsonResponse
+    public function update(FileUpdateRequest $request)
     {
         $user = $request->user();
-        $file = $user->repo()->findOrFail($fileId)->files->first();
+        $file = File::where('id', $request['file_id'])->with('repo')->first();
+        $repo = $file->repo;
 
-        if ($file) {
-            $uploadedFile = $request->file('file');
-            $fileName = $uploadedFile->getClientOriginalName();
-            $extension = $uploadedFile->getClientOriginalExtension();
-            $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
-            $newFileName = $fileNameWithoutExtension . '_' . time() . '.' . $extension;
-            $path = $uploadedFile->storeAs('uploads', $newFileName);
+        if ($user->can('has', $repo)) {
+            $content = $request['content'];
             $existingFileHash = hash_file('md5', Storage::path($file->path));
-            $newFileHash = hash_file('md5', $uploadedFile->path());
+            $newFileHash = hash('md5', $content);
             if ($existingFileHash !== $newFileHash) {
-                Storage::delete($file->path);
-                $file->update([
-                    'name' => $fileName,
-                    'path' => $path,
-                ]);
-                $this->register->addOperation($request['repo_id'], $fileId, $user->id, OperationEnum::UPDATE);
+                $existingFileName = pathinfo($file->path, PATHINFO_FILENAME);
+                $existingExtension = pathinfo($file->path, PATHINFO_EXTENSION);
+                $newFileName = 'uploads/' . $existingFileName . '.' . $existingExtension;
+                Storage::put($newFileName, $content);
+                $file->path = $newFileName;
+                $file->save();
+                $this->register->addOperation($repo->id, $file->id, $user->id, OperationEnum::UPDATE);
                 return response()->json(['message' => 'File updated successfully']);
-            } else {
-                return response()->json(['message' => 'File contents are the same']);
             }
+            return response()->json(['message' => 'File contents are the same']);
         }
         return response()->json(['error' => 'You do not have permission to update this file']);
     }
@@ -188,7 +185,6 @@ class FileController extends Controller
 
     public function download(ValidateFileRequest $request): \Illuminate\Http\JsonResponse
     {
-
         $fileId = $request['file_id'];
         try {
             $file = File::find($fileId);
@@ -200,11 +196,9 @@ class FileController extends Controller
                 'extension' => $extension,
                 'content' => $base64File
             ];
-
             ++$file->download_count;
             $file->save();
             $this->register->addOperation($file->repo->id, $file->id, $request->user()->id, OperationEnum::DOWNLOAD);
-
             return response()->json($fileData);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

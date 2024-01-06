@@ -37,9 +37,9 @@ use Illuminate\Support\Facades\Route;
         Route::prefix('file')->group(function () {
             Route::post('create-file', [FileController::class, 'create']);
             Route::post('delete-file', [FileController::class, 'delete']);
-            Route::post('update-file', [FileController::class, 'update']);
+            Route::post('update-file', [FileController::class, 'update'])->middleware('check-file-status');
             Route::Post('get-file', [FileController::class, 'get']);
-            Route::Post('download-file', [FileController::class, 'download'])->middleware('check-file-status');
+            Route::Post('download-file', [FileController::class, 'download']);
             Route::Post('check-in', [FileController::class, 'checkin']);
             Route::Post('check-out', [FileController::class, 'checkout']);
         });

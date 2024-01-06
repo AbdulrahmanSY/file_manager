@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\FileRequest;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class FileUpdateRequest extends FormRequest
 {
@@ -13,18 +15,19 @@ class FileUpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            //
+            'file_id'=>['required',Rule::exists('files','id')],
+            'content'=>['required','string'],
         ];
     }
     public function failedValidation(Validator $validator)
