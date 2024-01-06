@@ -20,7 +20,7 @@ use Pest\Expectation;
 
 class FileController extends Controller
 {
-    private $register;
+    private ?RegisterController $register;
 
     public function __construct()
     {
@@ -154,7 +154,6 @@ class FileController extends Controller
             return $this->error($e->getMessage());
         }
     }
-
     public function checkout(CheckInOutRequest $request)
     {
         try {

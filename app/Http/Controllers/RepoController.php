@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FileRequest\ValidateRepoRequest;
 use App\Http\Requests\RepoRequest\AddDeleteUserToRepoRequesrt;
 use App\Http\Requests\RepoRequest\RepoStoreRequest;
 use App\Http\Resources\RepoResource;
@@ -84,5 +85,11 @@ class RepoController extends Controller
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
+    }
+
+    public function getUsersRepo(ValidateRepoRequest $request){
+
+        $repo = Repo::where('id',$request['repo_id'])->with('users')->first();
+        return $this->success(UserResource::collection($repo->users));
     }
 }

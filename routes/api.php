@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group( function () {
         Route::post('add-delete-user-to-repo',[RepoController::class,'addDeleteUserToRepo']);
         Route::get('get-repository',[RepoController::class,'get']);
         Route::post('get-report',[RegisterController::class,'getReport']);
+        Route::post('get-users-repo',[RepoController::class,'getUsersRepo']);
     });
     Route::prefix('file')->group(function () {
         Route::post('create-file',[FileController::class,'create']);
