@@ -31,7 +31,7 @@ class FileStoreRequest extends FormRequest
             'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')]
         ];
     }
-    public function failedValidation(Validator $validator)
+    public function failedValidation(Validator $validator):void
     {
         $errors = $validator->errors()->all();
         throw new HttpResponseException($this->badRequestResponse('Bad input', $errors));

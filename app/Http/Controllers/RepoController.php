@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Aspects\Logger;
 use App\Http\Requests\FileRequest\ValidateRepoRequest;
 use App\Http\Requests\RepoRequest\AddDeleteUserToRepoRequesrt;
 use App\Http\Requests\RepoRequest\RepoStoreRequest;
@@ -9,12 +10,18 @@ use App\Http\Resources\RepoResource;
 use App\Http\Resources\UserResource;
 use App\Models\Repo;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
+#[Logger]
 class RepoController extends Controller
 {
+    /**
+     * @throws AuthorizationException
+     */
     public function create(RepoStoreRequest $request): \Illuminate\Http\JsonResponse
     {
+
         $user = $request->user();
         $repository = new Repo();
         $repository->name = $request->get('name');
@@ -40,22 +47,18 @@ class RepoController extends Controller
             }
             return $this->error(message: 'repo is not existing');
         } catch (\Exception $e) {
-            return $this->error($e);
+            return $this->error($e->getMessage());
         }
     }
 
     public function get(Request $request): \Illuminate\Http\JsonResponse
     {
-        try {
-            $user = $request->user();
-            $repos = $user->repo()->with('users')->get();
-            if ($user->repo()->exists()) {
-                return $this->success(data:RepoResource::collection($repos));
-            } else
-                return $this->success(message: 'repo is not existing ');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage());
-        }
+        $user = $request->user();
+        $repos = $user->repo()->with('users')->get();
+        if ($user->repo()->exists()) {
+            return $this->success(data: RepoResource::collection($repos));
+        } else
+            return $this->success(message: 'repo is not existing ');
     }
 
     public function addDeleteUserToRepo(AddDeleteUserToRepoRequesrt $request): \Illuminate\Http\JsonResponse
@@ -65,16 +68,15 @@ class RepoController extends Controller
             $repoId = $request->repo_id;
             $anotherUserId = $request->user_id;
             $repo = $user->repo()->where('repo_id', $repoId)->first();
-
             if ($repo->pivot->is_admin) {
                 $anotherUser = User::find($anotherUserId);
                 if ($anotherUser) {
                     if (!$anotherUser->repo()->where('repo_id', $repoId)->exists()) {
                         $anotherUser->repo()->attach($repoId);
-                        return $this->success(message:'User added successfully');
+                        return $this->success(message: 'User added successfully');
                     } else {
                         $anotherUser->repo()->detach($repoId);
-                        return $this->success(message:'User deleted from repo');
+                        return $this->success(message: 'User deleted from repo');
                     }
                 } else {
                     return $this->error('User not found');
@@ -87,9 +89,9 @@ class RepoController extends Controller
         }
     }
 
-    public function getUsersRepo(ValidateRepoRequest $request){
-
-        $repo = Repo::where('id',$request['repo_id'])->with('users')->first();
+    public function getUsersRepo(ValidateRepoRequest $request): \Illuminate\Http\JsonResponse
+    {
+        $repo = Repo::where('id', $request['repo_id'])->with('users')->first();
         return $this->success(UserResource::collection($repo->users));
     }
 }

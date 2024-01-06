@@ -17,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Repo::class => RepoPolicy::class,
 
+
     ];
 
     /**

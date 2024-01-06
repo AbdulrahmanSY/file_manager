@@ -14,10 +14,8 @@ class Logger implements Aspect
     {
 
     }
-
     public function executeBefore($request, $controller, $method)
     {
-        Log::info($this->message);
         Log::info('Request: ' . $request->fullUrl());
         Log::info('Controller: ' . get_class($controller));
         Log::info('Method: ' . $method);

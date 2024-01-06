@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Aspects\Logger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FileRequest\CheckInOutRequest;
 use App\Http\Requests\FileRequest\ValidateFileRequest;
@@ -18,6 +19,7 @@ use App\Enums\StatusEnum;
 use Mockery\Exception;
 use Pest\Expectation;
 
+#[Logger]
 class FileController extends Controller
 {
     private ?RegisterController $register;
@@ -85,13 +87,11 @@ class FileController extends Controller
             $newFileHash = hash_file('md5', $uploadedFile->path());
             if ($existingFileHash !== $newFileHash) {
                 Storage::delete($file->path);
-
                 $file->update([
                     'name' => $fileName,
                     'path' => $path,
                 ]);
                 $this->register->addOperation($request['repo_id'], $fileId, $user->id, OperationEnum::UPDATE);
-
                 return response()->json(['message' => 'File updated successfully']);
             } else {
                 return response()->json(['message' => 'File contents are the same']);
@@ -106,14 +106,14 @@ class FileController extends Controller
             $user = $request->user();
             $fileId = $request['file_id'];
             $file = File::where('id', $fileId)->with('repo')->first();
+//
+//            $isUserAdmin = $user->repo()->when($file->repo->id, function ($query) use ($file, $user) {
+//                return $query->where('repo_users.repo_id', $file->repo->id)
+//                    ->where('repo_users.user_id', $user->id)
+//                    ->where('repo_users.is_admin', true);
+//            })->exists();
 
-            $isUserAdmin = $user->repo()->when($file->repo->id, function ($query) use ($file, $user) {
-                return $query->where('repo_users.repo_id', $file->repo->id)
-                    ->where('repo_users.user_id', $user->id)
-                    ->where('repo_users.is_admin', true);
-            })->exists();
-
-            if ($isUserAdmin) {
+            if ($user->can('is_admin', $file->repo)) {
                 Storage::delete($file->path);
                 $file->delete();
                 return $this->success(message: 'File deleted successfully');
@@ -154,6 +154,7 @@ class FileController extends Controller
             return $this->error($e->getMessage());
         }
     }
+
     public function checkout(CheckInOutRequest $request)
     {
         try {
@@ -195,7 +196,7 @@ class FileController extends Controller
             $extension = pathinfo($file->path, PATHINFO_EXTENSION);
             $base64File = base64_encode($fileContents);
             $fileData = [
-                'name'=>$file->name,
+                'name' => $file->name,
                 'extension' => $extension,
                 'content' => $base64File
             ];

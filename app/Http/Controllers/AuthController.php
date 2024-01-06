@@ -15,9 +15,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
-//#[Logger]
+#[Logger]
 class AuthController extends Controller
 {
+
     function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
         try {

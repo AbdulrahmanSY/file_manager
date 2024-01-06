@@ -16,7 +16,7 @@ class RepoPolicy
                 $query->where('repos.id', $repo->id);
             })->exists();
     }
-    public function delete(User $user, Repo $repo): bool
+    public function is_admin(User $user, Repo $repo): bool
     {
         return $user->repo()->where('repo_id', $repo->id)->wherePivot('is_admin', true)->exists();
     }

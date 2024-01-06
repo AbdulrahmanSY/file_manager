@@ -41,7 +41,7 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('api')
                 ->prefix('api')
-//                ->middleware('aspect') // passing requests in aspect
+                ->middleware('aspect') // passing requests in aspect
                 ->group(base_path('routes/api.php'));
 
             Route::middleware('web')
