@@ -27,7 +27,6 @@ class RepoController extends Controller
 
         return  $this->get( $request);
     }
-
     public function delete(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
@@ -50,11 +49,9 @@ class RepoController extends Controller
             return $this->error($e->getMessage());
         }
     }
-
-    public function get(Request $request)
+    public function get(Request $request): \Illuminate\Http\JsonResponse
     {
-
-            $repos = $request->user()->repo()->withCount('users')->paginate(9);
+            $repos = $request->user()->repo()->withCount('users')->orderBy('created_at','desc')->paginate(9);
             if ($request->user()->repo()->exists()) {
 
                 if ($repos->isNotEmpty()) {
@@ -72,7 +69,6 @@ class RepoController extends Controller
             return $this->success(message: 'repo is not existing ');
 
     }
-
     public function addDeleteUserToRepo(AddDeleteUserToRepoRequesrt $request): \Illuminate\Http\JsonResponse
     {
         try {
@@ -87,7 +83,6 @@ class RepoController extends Controller
                         $anotherUser->repo()->attach($repoId);
                         return $this->success(message: 'User added successfully');
                     }
-
                     $anotherUser->repo()->detach($repoId);
                     return $this->success(message: 'User deleted from repo');
                 }
@@ -100,7 +95,6 @@ class RepoController extends Controller
             return $this->error($e->getMessage());
         }
     }
-
     public function getUsersRepo(ValidateRepoRequest $request): \Illuminate\Http\JsonResponse
     {
         $repo = Repo::where('id', $request['repo_id'])->with('users')->first();
