@@ -21,6 +21,8 @@ return new class extends Migration
             $table->boolean('verify')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

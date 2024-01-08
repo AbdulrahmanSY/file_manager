@@ -71,8 +71,7 @@ class FileController extends Controller
         return $this->success(new RepoResource($repo));
     }
 
-
-    public function update(FileUpdateRequest $request)
+    public function update(FileUpdateRequest $request): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
         $file = File::where('id', $request['file_id'])->with('repo')->first();
@@ -103,16 +102,12 @@ class FileController extends Controller
             $user = $request->user();
             $fileId = $request['file_id'];
             $file = File::where('id', $fileId)->with('repo')->first();
-//
-//            $isUserAdmin = $user->repo()->when($file->repo->id, function ($query) use ($file, $user) {
-//                return $query->where('repo_users.repo_id', $file->repo->id)
-//                    ->where('repo_users.user_id', $user->id)
-//                    ->where('repo_users.is_admin', true);
-//            })->exists();
-
             if ($user->can('is_admin', $file->repo)) {
                 Storage::delete($file->path);
+
                 $file->delete();
+                $this->register->addOperation($file->repo->id, $file->id, $user->id, OperationEnum::DELETE);
+
                 return $this->success(message: 'File deleted successfully');
             }
             return $this->error('You do not have permission to delete this file');
@@ -122,22 +117,23 @@ class FileController extends Controller
 
     }
 
-    public function checkin(CheckInOutRequest $request)
+    public function checkin(CheckInOutRequest $request): \Illuminate\Http\JsonResponse
     {
         try {
             $user = $request->user();
-            $repo = $user->repo->where('id', $request['repo_id'])->first();
+            $repo = $user->repo()->lockForUpdate()->find($request['repo_id']);
+            DB::beginTransaction();
+
             if ($repo) {
                 $fileIds = $request->input('file_id');
                 $files = $repo->files()->whereIn('id', $fileIds);
                 if (!$files->exists()) {
-                    return $this->error('the files not exists ');
+                    return $this->error('the file not exists ');
                 }
                 $files = $files->get();
-                DB::beginTransaction();
                 foreach ($files as $file) {
                     if ($file->status === StatusEnum::BLOCK) {
-                        return $this->error('the files not available ');
+                        return $this->error('the file : '. $file->name . ' not available ');
                     }
                     $file->status = StatusEnum::BLOCK;
                     $file->save();
@@ -151,8 +147,7 @@ class FileController extends Controller
             return $this->error($e->getMessage());
         }
     }
-
-    public function checkout(CheckInOutRequest $request)
+    public function checkout(CheckInOutRequest $request): \Illuminate\Http\JsonResponse
     {
         try {
             DB::beginTransaction();

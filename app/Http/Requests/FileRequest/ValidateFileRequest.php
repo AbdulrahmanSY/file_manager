@@ -25,7 +25,7 @@ class ValidateFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file_id'=>['required',Rule::exists('files','id')]
+            'file_id'=>['required',Rule::exists('files','id')->whereNull('deleted_at')]
         ];
     }
     public function failedValidation(Validator $validator)

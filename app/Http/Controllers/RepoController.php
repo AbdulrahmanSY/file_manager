@@ -16,9 +16,6 @@ use Illuminate\Http\Request;
 #[Logger]
 class RepoController extends Controller
 {
-    /**
-     * @throws AuthorizationException
-     */
     public function create(RepoStoreRequest $request): \Illuminate\Http\JsonResponse
     {
 
@@ -35,15 +32,17 @@ class RepoController extends Controller
         try {
             $user = $request->user();
             $repo_id = $request->id;
+
             if ($user->repo()->where('repo_id', $repo_id)->exists()) {
                 $repo = $user->repo()->where('repo_id', $repo_id)->first();
                 if ($repo->pivot->is_admin) {
                     $user->repo()->detach($repo);
+                    $repo->files()->delete();
                     $repo->delete();
                     return $this->success(message: 'repo is deleted successfully');
-                } else {
-                    return $this->error(message: 'repo is existing but you have no permissions');
                 }
+
+                return $this->error(message: 'repo is existing but you have no permissions');
             }
             return $this->error(message: 'repo is not existing');
         } catch (\Exception $e) {
@@ -51,14 +50,18 @@ class RepoController extends Controller
         }
     }
 
-    public function get(Request $request): \Illuminate\Http\JsonResponse
+    public function get(Request $request)
     {
-        $user = $request->user();
-        $repos = $user->repo()->with('users')->get();
-        if ($user->repo()->exists()) {
-            return $this->success(data: RepoResource::collection($repos));
-        } else
+
+        return cache()->remember('repo_get', 60, function () use ($request) {
+            $repos = $request->user()->repo()->with('users')->get();
+            if ($request->user()->repo()->exists()) {
+                return $this->success(data: RepoResource::collection($repos));
+            }
+
             return $this->success(message: 'repo is not existing ');
+        });
+
     }
 
     public function addDeleteUserToRepo(AddDeleteUserToRepoRequesrt $request): \Illuminate\Http\JsonResponse
@@ -74,16 +77,16 @@ class RepoController extends Controller
                     if (!$anotherUser->repo()->where('repo_id', $repoId)->exists()) {
                         $anotherUser->repo()->attach($repoId);
                         return $this->success(message: 'User added successfully');
-                    } else {
-                        $anotherUser->repo()->detach($repoId);
-                        return $this->success(message: 'User deleted from repo');
                     }
-                } else {
-                    return $this->error('User not found');
+
+                    $anotherUser->repo()->detach($repoId);
+                    return $this->success(message: 'User deleted from repo');
                 }
-            } else {
-                return $this->error('You have no permissions');
+
+                return $this->error('User not found');
             }
+
+            return $this->error('You have no permissions');
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('status');
             $table->string('path');
             $table->foreignId('repo_id')->references('id')->on('repos');
+            $table->softDeletes();
             $table->integer('download_count')->default(0);
             $table->timestamps();
         });

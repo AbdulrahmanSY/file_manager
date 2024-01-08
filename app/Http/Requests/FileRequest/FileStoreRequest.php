@@ -28,7 +28,7 @@ class FileStoreRequest extends FormRequest
     {
         return [
             'file' => ['required', 'file', 'mimes:doc,docx,pdf,txt','max:2048'],
-            'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')]
+            'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')->whereNull('deleted_at')]
         ];
     }
     public function failedValidation(Validator $validator):void

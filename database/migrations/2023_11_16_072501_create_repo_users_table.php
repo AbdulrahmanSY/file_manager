@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('repo_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->references('id')->on('users');
-            $table->foreignId('repo_id')->references('id')->on('repos');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('repo_id')->references('id')->on('repos')->onDelete('cascade');
             $table->boolean('is_admin')->default(false);
+            $table->softDeletes();
+
             $table->timestamps();
         });
     }

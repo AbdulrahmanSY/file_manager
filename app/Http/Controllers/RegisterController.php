@@ -38,8 +38,11 @@ class RegisterController extends Controller
     }
     public function getReport(ValidateRepoRequest $request)
     {
-        $repo = Register::where('repo_id', $request['repo_id'])
-            ->with('file', 'user')
+        $repo = Register::withTrashed()
+            ->where('repo_id', $request['repo_id'])
+            ->with(['file' => function ($query) {
+                $query->withTrashed();
+            }, 'user'])
             ->orderBy('created_at', 'desc')
             ->get();
         return $this->success(ReportResource::collection($repo));

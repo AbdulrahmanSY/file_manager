@@ -28,7 +28,7 @@ class ValidateRepoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')]
+            'repo_id'=>['required',new UserAttachedToRepo(Auth::user()->id),Rule::exists('repos','id')->whereNull('deleted_at')]
         ];
     }
     public function failedValidation(Validator $validator)

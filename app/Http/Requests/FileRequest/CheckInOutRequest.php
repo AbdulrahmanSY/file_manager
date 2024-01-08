@@ -29,17 +29,16 @@ class CheckInOutRequest extends FormRequest
     {
 
         return [
-            'repo_id'=>['required',Rule::exists('repos','id'),new UserAttachedToRepo(Auth::user()->id)],
+            'repo_id'=>['required',Rule::exists('repos','id')->whereNull('deleted_at'),new UserAttachedToRepo(Auth::user()->id)],
             'file_id' => [
                 'required',
                 'array',
-                Rule::exists('files', 'id')
+                Rule::exists('files', 'id')->whereNull('deleted_at')
                     ->where(function ($query) {
                         $query->whereIn('id', $this->input('file_id'));
                     }),
                  ],
             ];
-
     }
     public function failedValidation(Validator $validator)
     {

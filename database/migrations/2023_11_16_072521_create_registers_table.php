@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('repo_id')->references('id')->on('repos')->onDelete('cascade');
             $table->foreignId('file_id')->references('id')->on('files') ;
             $table->string('operation');
+            $table->softDeletes();
+
             $table->timestamps();
         });
     }
