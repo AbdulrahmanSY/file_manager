@@ -54,11 +54,10 @@ class RepoController extends Controller
     {
 
         return cache()->remember('repo_get', 60, function () use ($request) {
-            $repos = $request->user()->repo()->with('users')->get();
+            $repos = $request->user()->repo()->get();
             if ($request->user()->repo()->exists()) {
                 return $this->success(data: RepoResource::collection($repos));
             }
-
             return $this->success(message: 'repo is not existing ');
         });
 

@@ -21,7 +21,6 @@ class RepoResource extends JsonResource
             'name' => $this->name,
             'user_count' => $this->users()->count(),
             'is_admin' => $this->pivot->is_admin,
-            'users' => UserResource::collection($this->whenLoaded('users')),
             'files'=>FileResource::collection($this->whenLoaded('files'))
         ];
     }
