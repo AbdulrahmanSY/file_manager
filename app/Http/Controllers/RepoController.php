@@ -24,7 +24,8 @@ class RepoController extends Controller
         $repository->name = $request->get('name');
         $repository->save();
         $user->repo()->attach($repository, ['is_admin' => true]);
-        return $this->success(RepoResource::collection($repo->withCount('users')->get()));
+
+        return  $this->get( $request);
     }
 
     public function delete(Request $request): \Illuminate\Http\JsonResponse
@@ -53,9 +54,20 @@ class RepoController extends Controller
     public function get(Request $request)
     {
 
-            $repos = $request->user()->repo()->withCount('users')->get();
+            $repos = $request->user()->repo()->withCount('users')->paginate(9);
             if ($request->user()->repo()->exists()) {
-                return $this->success(data: RepoResource::collection($repos));
+//            return $repos;
+                if ($repos->isNotEmpty()) {
+                    $repoResourceCollection = RepoResource::collection($repos);
+                    $firstPage = $repos->currentPage();
+                    $lastPage = $repos->lastPage();
+
+                    return $this->success([
+                        'data' => $repoResourceCollection,
+                        'current_page' => $firstPage,
+                        'last_page' => $lastPage,
+                    ]);
+                }
             }
             return $this->success(message: 'repo is not existing ');
 
