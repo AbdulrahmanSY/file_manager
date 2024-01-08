@@ -56,14 +56,14 @@ class RepoController extends Controller
 
             $repos = $request->user()->repo()->withCount('users')->paginate(9);
             if ($request->user()->repo()->exists()) {
-//            return $repos;
+
                 if ($repos->isNotEmpty()) {
                     $repoResourceCollection = RepoResource::collection($repos);
                     $firstPage = $repos->currentPage();
                     $lastPage = $repos->lastPage();
 
                     return $this->success([
-                        'data' => $repoResourceCollection,
+                        'content' => $repoResourceCollection,
                         'current_page' => $firstPage,
                         'last_page' => $lastPage,
                     ]);
