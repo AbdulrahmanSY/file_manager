@@ -19,7 +19,7 @@ class RepoResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->pivot->user_id,
             'name' => $this->name,
-            'user_count' => $this->users()->count(),
+            'user_count' => $this->users_count,
             'is_admin' => $this->pivot->is_admin,
             'files'=>FileResource::collection($this->whenLoaded('files'))
         ];

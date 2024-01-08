@@ -9,9 +9,9 @@ use Rennokki\QueryCache\Traits\QueryCacheable;
 
 class Repo extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes,QueryCacheable;
     protected $dates = ['deleted_at'];
-
+    public $cacheFor = 600;
     protected $fillable = [
         'name',
     ];

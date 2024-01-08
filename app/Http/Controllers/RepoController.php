@@ -16,15 +16,15 @@ use Illuminate\Http\Request;
 #[Logger]
 class RepoController extends Controller
 {
-    public function create(RepoStoreRequest $request): \Illuminate\Http\JsonResponse
+    public function create(RepoStoreRequest $request)
     {
-
         $user = $request->user();
+        $repo = $user->repo();
         $repository = new Repo();
         $repository->name = $request->get('name');
         $repository->save();
         $user->repo()->attach($repository, ['is_admin' => true]);
-        return $this->success(new UserResource($user->load('repo')));
+        return $this->success(RepoResource::collection($repo->withCount('users')->get()));
     }
 
     public function delete(Request $request): \Illuminate\Http\JsonResponse
@@ -53,13 +53,11 @@ class RepoController extends Controller
     public function get(Request $request)
     {
 
-        return cache()->remember('repo_get', 60, function () use ($request) {
-            $repos = $request->user()->repo()->get();
+            $repos = $request->user()->repo()->withCount('users')->get();
             if ($request->user()->repo()->exists()) {
                 return $this->success(data: RepoResource::collection($repos));
             }
             return $this->success(message: 'repo is not existing ');
-        });
 
     }
 
