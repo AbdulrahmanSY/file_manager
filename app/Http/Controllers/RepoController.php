@@ -67,7 +67,6 @@ class RepoController extends Controller
                 }
             }
             return $this->success(message: 'repo is not existing ');
-
     }
     public function addDeleteUserToRepo(AddDeleteUserToRepoRequesrt $request): \Illuminate\Http\JsonResponse
     {
@@ -97,6 +96,7 @@ class RepoController extends Controller
     }
     public function getUsersRepo(ValidateRepoRequest $request): \Illuminate\Http\JsonResponse
     {
+
         $repo = Repo::where('id', $request['repo_id'])->with('users')->first();
         return $this->success(UserResource::collection($repo->users));
     }

@@ -19,7 +19,7 @@ class RepoSeed extends Seeder
 
         foreach ($users as $user) {
             $repos = Repo::factory()->count(100)->create();
-            $user->repo()->attach($repos);
+            $user->repo()->attach($repos, ['is_admin' => true]);
         }
     }
 }
